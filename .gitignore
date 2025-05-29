@@ -1,0 +1,7 @@
+.env
+venv/
+venv311/
+__pycache__/
+*.pyc
+local_db.sqlite  # Si usas este nombre para tu DB local SQLite
+uploads/         # Si aún tienes esta carpeta y no quieres subir su contenido

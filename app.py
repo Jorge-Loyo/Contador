@@ -21,6 +21,25 @@ except ImportError:
 
 
 app = Flask(__name__)
+
+# --- NUEVO: Cargar variables de entorno desde .env ---
+from dotenv import load_dotenv
+load_dotenv() # Esto buscará un archivo .env en el mismo directorio o superior y cargará sus variables
+# --- FIN NUEVO ---
+
+# Intenta importar el blueprint de herramientas (esto está bien como lo tenías)
+try:
+    from herramientas_bp.routes import herramientas_bp
+    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = True
+except ImportError:
+    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = False
+    print("Advertencia: No se pudo importar 'herramientas_bp'. La ruta /herramientas no estará disponible.")
+
+app = Flask(__name__)
+# Ahora os.environ.get() podrá leer las variables cargadas desde .env
+app.secret_key = os.environ.get('SECRET_KEY', 'valor_default_para_desarrollo_local_12345!qlg_CAMBIAR_ESTO')
+
+
 app.secret_key = os.environ.get('SECRET_KEY', 'valor_default_para_desarrollo_local_12345!qlg_CAMBIAR_ESTO')
 
 # --- 2. CONFIGURACIÓN DE UPLOAD_FOLDER (Opcional si todo es en memoria) ---
