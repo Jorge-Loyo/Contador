@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina }} - Agilize Soluciones</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <nav>
+            <a href="{{ url_for('index') }}">Herramienta Contador</a>
+        </nav>
+        <hr>
+
+        <h1>{{ titulo_pagina }}</h1>
+        <p>¡Bienvenido al panel de herramientas de Agilize Soluciones!</p>
+        <p>Aquí encontrarás diversas utilidades para facilitar tu trabajo.</p>
+
+        <ul>
+            <li><a href="{{ url_for('index') }}">Comparador de Montos Excel</a></li>
+        </ul>
+
+    </div>
+</body>
+
+</html>
