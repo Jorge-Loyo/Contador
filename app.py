@@ -4,6 +4,7 @@ import os
 from decimal import Decimal, getcontext, InvalidOperation # Para cálculos monetarios precisos
 import time # Para el límite de tiempo
 import io # Para leer el archivo Excel en memoria
+from flask_sqlalchemy import SQLAlchemy 
 
 # --- 1. IMPORTAR EL BLUEPRINT ---
 # Esta línea asume que tienes una carpeta llamada 'herramientas_bp' 
@@ -30,6 +31,43 @@ app.secret_key = os.environ.get('SECRET_KEY', 'valor_default_para_desarrollo_loc
 # if not os.path.exists(UPLOAD_FOLDER) and UPLOAD_FOLDER == 'uploads': # Solo crear si es el default y no existe
 #     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
+# --- CONFIGURACIÓN DE LA BASE DE DATOS ---
+# Para producción en PythonAnywhere, es MEJOR usar variables de entorno para estos datos sensibles.
+# Para desarrollo local, puedes ponerlos directamente, pero ¡NUNCA subas contraseñas a GitHub!
+
+# Datos de tu base de datos MySQL en PythonAnywhere:
+DB_USERNAME = os.environ.get('DB_USERNAME_PA') # En PA será 'Jloyo'
+DB_PASSWORD = os.environ.get('DB_PASSWORD_PA') # La contraseña que estableciste para MySQL en PA
+DB_HOST = os.environ.get('DB_HOST_PA')         # 'Jloyo.mysql.pythonanywhere-services.com'
+DB_NAME = os.environ.get('DB_NAME_PA')         # 'Jloyo$default'
+
+# Construir la URI de la base de datos
+# Si alguna variable de entorno no está definida (ej. en local), podrías usar valores default o dar error
+if all([DB_USERNAME, DB_PASSWORD, DB_HOST, DB_NAME]):
+    app.config['SQLALCHEMY_DATABASE_URI'] = \
+        f"mysql+mysqlclient://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+else:
+    # Configuración para una base de datos SQLite local si las variables de entorno no están seteadas
+    # Esto es útil para que puedas desarrollar localmente sin MySQL si lo prefieres.
+    # SQLite guarda la base de datos en un archivo.
+    print("ADVERTENCIA: Variables de entorno para MySQL no configuradas. Usando SQLite local ('local_db.sqlite').")
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'local_db.sqlite')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Recomendado para desactivar notificaciones innecesarias
+
+db = SQLAlchemy(app) # <--- INICIALIZA SQLAlchemy con tu app
+
+# --- IMPORTAR MODELOS ---
+# Esto es importante para que SQLAlchemy sepa de tus modelos
+# y para que puedas usarlos en tus rutas.
+# Asegúrate de que models.py esté al mismo nivel que app.py o ajusta la importación.
+try:
+    from models import User
+except ImportError:
+    print("ADVERTENCIA: No se pudo importar el modelo User. Asegúrate de que models.py exista y esté correcto.")
+# --- FIN IMPORTAR MODELOS ---
 
 # --- 3. REGISTRAR EL BLUEPRINT ---
 if BLUEPRINT_HERRAMIENTAS_DISPONIBLE:
