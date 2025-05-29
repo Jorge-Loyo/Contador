@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from decimal import Decimal, getcontext, InvalidOperation # Para cálculos monetarios precisos
 import time # Para el límite de tiempo
+import io # Añade esta importación al principio de app.py
 
 app = Flask(__name__)
 app.secret_key = 'tu_super_secreta_llave_MUY_SECRETA' # Cambia esto en producción
@@ -155,9 +156,13 @@ def index():
                 return render_template('index.html', error_excel="No se seleccionó ningún archivo.")
             if file and (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
                 try:
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-                    file.save(filepath)
-                    df = pd.read_excel(filepath, engine='openpyxl') # Especificar engine
+                    #filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+                    #file.save(filepath)
+                    #df = pd.read_excel(filepath, engine='openpyxl') # Especificar engine
+                    # Leer el contenido del archivo en un stream de bytes en memoria
+                    file_stream = io.BytesIO(file.read())
+                    df = pd.read_excel(file_stream, engine='openpyxl')
+                    file_stream.close() # Buena práctica cerrar el stream
                     
                     # Detección más robusta de columnas
                     column_id_name = None
@@ -204,8 +209,8 @@ def index():
                     return redirect(url_for('index'))
 
                 except Exception as e:
-                    app.logger.error(f"Error procesando archivo Excel: {e}", exc_info=True)
-                    return render_template('index.html', error_excel=f"Error al procesar el archivo: {e}")
+                    app.logger.error(f"Error leyendo el stream del archivo Excel: {e}", exc_info=True)
+                    return render_template('index.html', error_excel=f"Error al leer el contenido del archivo Excel: {e}")
             else:
                 return render_template('index.html', error_excel="Formato de archivo no válido. Use .xlsx o .xls.")
 
