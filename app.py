@@ -1,104 +1,69 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-import pandas as pd
 import os
+import io
+import time
 from decimal import Decimal, getcontext, InvalidOperation # Para cálculos monetarios precisos
-import time # Para el límite de tiempo
-import io # Para leer el archivo Excel en memoria
+
+import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy 
 
-# --- 1. IMPORTAR EL BLUEPRINT ---
-# Esta línea asume que tienes una carpeta llamada 'herramientas_bp' 
-# y dentro de ella un archivo 'routes.py' donde defines 'herramientas_bp'.
-# Si el archivo está en otro lugar o se llama diferente, ajusta la importación.
-try:
-    from herramientas_bp.routes import herramientas_bp
-    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = True
-except ImportError:
-    # Esto es útil si estás desarrollando y aún no has creado el blueprint.
-    # La aplicación podrá seguir funcionando sin él (pero la ruta /herramientas no existirá).
-    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = False
-    print("Advertencia: No se pudo importar 'herramientas_bp'. La ruta /herramientas no estará disponible.")
-
-
-app = Flask(__name__)
-
-# --- NUEVO: Cargar variables de entorno desde .env ---
+# --- CARGAR VARIABLES DE ENTORNO DESDE .env ---
+# Esto debe hacerse muy temprano, idealmente antes de cualquier configuración que las use.
 from dotenv import load_dotenv
-load_dotenv() # Esto buscará un archivo .env en el mismo directorio o superior y cargará sus variables
-# --- FIN NUEVO ---
+load_dotenv() # Busca un archivo .env y carga sus variables en os.environ
 
-# Intenta importar el blueprint de herramientas (esto está bien como lo tenías)
-try:
-    from herramientas_bp.routes import herramientas_bp
-    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = True
-except ImportError:
-    BLUEPRINT_HERRAMIENTAS_DISPONIBLE = False
-    print("Advertencia: No se pudo importar 'herramientas_bp'. La ruta /herramientas no estará disponible.")
-
+# --- INICIALIZACIÓN DE LA APLICACIÓN FLASK ---
 app = Flask(__name__)
-# Ahora os.environ.get() podrá leer las variables cargadas desde .env
-app.secret_key = os.environ.get('SECRET_KEY', 'valor_default_para_desarrollo_local_12345!qlg_CAMBIAR_ESTO')
 
-
-app.secret_key = os.environ.get('SECRET_KEY', 'valor_default_para_desarrollo_local_12345!qlg_CAMBIAR_ESTO')
-
-# --- 2. CONFIGURACIÓN DE UPLOAD_FOLDER (Opcional si todo es en memoria) ---
-# Si realmente ya no guardas archivos en disco gracias a io.BytesIO, puedes comentar o eliminar estas líneas.
-# Si alguna otra parte de tu app (o futuras herramientas) necesitan guardar archivos, mantenlo.
-# UPLOAD_FOLDER = 'uploads' 
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# if not os.path.exists(UPLOAD_FOLDER) and UPLOAD_FOLDER == 'uploads': # Solo crear si es el default y no existe
-#     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+# Configurar SECRET_KEY (leída desde .env o un valor default)
+app.secret_key = os.environ.get('SECRET_KEY', 'CAMBIAR_ESTO_POR_UNA_CLAVE_SEGURA_EN_DESARROLLO_LOCAL')
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
-# Para producción en PythonAnywhere, es MEJOR usar variables de entorno para estos datos sensibles.
-# Para desarrollo local, puedes ponerlos directamente, pero ¡NUNCA subas contraseñas a GitHub!
+DB_USERNAME = os.environ.get('DB_USERNAME_PA')
+DB_PASSWORD = os.environ.get('DB_PASSWORD_PA')
+DB_HOST = os.environ.get('DB_HOST_PA')
+DB_NAME = os.environ.get('DB_NAME_PA')
 
-# Datos de tu base de datos MySQL en PythonAnywhere:
-DB_USERNAME = os.environ.get('DB_USERNAME_PA') # En PA será 'Jloyo'
-DB_PASSWORD = os.environ.get('DB_PASSWORD_PA') # La contraseña que estableciste para MySQL en PA
-DB_HOST = os.environ.get('DB_HOST_PA')         # 'Jloyo.mysql.pythonanywhere-services.com'
-DB_NAME = os.environ.get('DB_NAME_PA')         # 'Jloyo$default'
-
-# Construir la URI de la base de datos
-# Si alguna variable de entorno no está definida (ej. en local), podrías usar valores default o dar error
 if all([DB_USERNAME, DB_PASSWORD, DB_HOST, DB_NAME]):
+    # Usar PyMySQL para la conexión
     app.config['SQLALCHEMY_DATABASE_URI'] = \
-        f"mysql+mysqlclient://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+        f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}" # <--- CAMBIO AQUÍ
 else:
-    # Configuración para una base de datos SQLite local si las variables de entorno no están seteadas
-    # Esto es útil para que puedas desarrollar localmente sin MySQL si lo prefieres.
-    # SQLite guarda la base de datos en un archivo.
     print("ADVERTENCIA: Variables de entorno para MySQL no configuradas. Usando SQLite local ('local_db.sqlite').")
     basedir = os.path.abspath(os.path.dirname(__file__))
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'local_db.sqlite')
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Recomendado para desactivar notificaciones innecesarias
-
-db = SQLAlchemy(app) # <--- INICIALIZA SQLAlchemy con tu app
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app) # Inicializa SQLAlchemy DESPUÉS de configurar la URI
 
 # --- IMPORTAR MODELOS ---
-# Esto es importante para que SQLAlchemy sepa de tus modelos
-# y para que puedas usarlos en tus rutas.
-# Asegúrate de que models.py esté al mismo nivel que app.py o ajusta la importación.
+# Es importante importar los modelos DESPUÉS de inicializar 'db',
+# ya que los modelos dependen de 'db.Model'.
 try:
-    from models import User
-except ImportError:
-    print("ADVERTENCIA: No se pudo importar el modelo User. Asegúrate de que models.py exista y esté correcto.")
-# --- FIN IMPORTAR MODELOS ---
+    from models import User # Asume que models.py está al mismo nivel y define User
+    MODELS_DISPONIBLES = True
+except ImportError as e:
+    MODELS_DISPONIBLES = False
+    print(f"ADVERTENCIA: No se pudo importar el modelo User: {e}. Asegúrate de que models.py exista y esté correcto.")
 
-# --- 3. REGISTRAR EL BLUEPRINT ---
-if BLUEPRINT_HERRAMIENTAS_DISPONIBLE:
-    app.register_blueprint(herramientas_bp)
-    # No necesitas url_prefix aquí si la ruta principal del blueprint ya es '/herramientas/'
-    # app.register_blueprint(herramientas_bp, url_prefix='/portal') # Ejemplo con prefijo
+# --- IMPORTAR Y REGISTRAR BLUEPRINTS ---
+# Los Blueprints también se registran después de que 'app' (y 'db' si lo usan) estén listos.
+try:
+    from herramientas_bp.routes import herramientas_bp
+    app.register_blueprint(herramientas_bp) # No se necesita url_prefix si la ruta ya es /herramientas/
+    print("INFO: Blueprint 'herramientas_bp' registrado.")
+except ImportError as e:
+    print(f"Advertencia: No se pudo importar o registrar 'herramientas_bp': {e}. La ruta /herramientas no estará disponible.")
 
-# Configurar precisión para Decimal (opcional, el default suele ser suficiente)
+# Configuración de precisión para Decimal (opcional)
 # getcontext().prec = 28 
 
+# --- CLASE CombinacionSolver ---
 class CombinacionSolver:
-    # ... (tu clase CombinacionSolver sin cambios, está muy bien) ...
+    # ... (tu clase CombinacionSolver sin cambios aquí, está bien como la tienes) ...
+    # ... (Solo asegúrate de que los app.logger.info o app.logger.warning que tenías comentados
+    # ... no se pueden usar directamente aquí a menos que pases 'app.logger' a la clase.
+    # ... Los print() que tienes son una alternativa simple para la consola.)
     def __init__(self, items_original_lista, monto_objetivo_str, time_limit_seconds=30):
         self.items_procesados = []
         try:
@@ -128,9 +93,7 @@ class CombinacionSolver:
                     'monto': monto,
                 })
             except Exception as e:
-                # Usar app.logger si está disponible globalmente o pasar una instancia de logger
-                # Por ahora, un print es seguro si app.logger no está definido en este scope.
-                print(f"Advertencia: Item inválido omitido: {data_row} debido a {e}")
+                print(f"Advertencia en CombinacionSolver: Item inválido omitido: {data_row} debido a {e}")
                 continue
         
         self.items_procesados.sort(key=lambda x: x['monto'], reverse=True)
@@ -149,8 +112,7 @@ class CombinacionSolver:
 
         if time.time() - self.start_time > self.time_limit_seconds:
             self.time_limit_exceeded_flag = True
-            # app.logger.info(f"Límite de tiempo de {self.time_limit_seconds}s alcanzado.") # Idem logger
-            print(f"INFO: Límite de tiempo de {self.time_limit_seconds}s alcanzado.")
+            print(f"INFO en CombinacionSolver: Límite de tiempo de {self.time_limit_seconds}s alcanzado.")
             return
 
         if current_sum <= self.monto_objetivo and current_sum > self.best_sum_found:
@@ -190,20 +152,15 @@ class CombinacionSolver:
             final_combination_output.append((item_data['id'], item_data['monto']))
             
         elapsed_time = time.time() - self.start_time
-        # app.logger.info(f"Búsqueda completada en {elapsed_time:.2f}s. Mejor suma: {self.best_sum_found}") # Idem logger
-        print(f"INFO: Búsqueda completada en {elapsed_time:.2f}s. Mejor suma: {self.best_sum_found}")
+        print(f"INFO en CombinacionSolver: Búsqueda completada en {elapsed_time:.2f}s. Mejor suma: {self.best_sum_found}")
         if self.time_limit_exceeded_flag:
-            # app.logger.warning("Advertencia: La búsqueda fue terminada por límite de tiempo...") # Idem logger
-            print("ADVERTENCIA: La búsqueda fue terminada por límite de tiempo. La solución podría no ser la óptima global.")
+            print("ADVERTENCIA en CombinacionSolver: La búsqueda fue terminada por límite de tiempo. La solución podría no ser la óptima global.")
             
         return final_combination_output, self.best_sum_found, self.monto_objetivo, self.time_limit_exceeded_flag
 
-
+# --- RUTAS PRINCIPALES DE LA APLICACIÓN ---
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # --- 4. AÑADIR título_pagina AL CONTEXTO DE LA PLANTILLA ---
-    # Esto es opcional, pero ayuda a mantener la consistencia si tus plantillas esperan esta variable.
-    # Lo habías mencionado en la guía anterior.
     titulo_actual = "Comparador de Montos Excel" 
     
     if request.method == 'POST':
@@ -299,23 +256,29 @@ def index():
 def reset():
     session.pop('excel_data', None)
     session.pop('filename', None)
-    # La limpieza de la carpeta 'uploads' ya no es necesaria si todo es en memoria
     return redirect(url_for('index'))
+
+# --- COMANDO CLI PARA INICIALIZAR LA BASE DE DATOS ---
+# Este comando es útil para crear las tablas en tu base de datos
+# ejecutando "flask init-db" en la terminal.
+@app.cli.command("init-db")
+def init_db_command():
+    """Crea las tablas de la base de datos."""
+    if not MODELS_DISPONIBLES:
+        print("Error: Modelos de base de datos no disponibles. No se pueden crear las tablas.")
+        return
+    try:
+        db.create_all()
+        print("Base de datos inicializada y tablas creadas (si no existían).")
+    except Exception as e:
+        print(f"Error al inicializar la base de datos: {e}")
+        print("Asegúrate de que las variables de entorno de la base de datos (DB_USERNAME_PA, etc.)")
+        print("estén configuradas correctamente si esperas conectarte a MySQL.")
 
 if __name__ == '__main__':
     import logging
-    # --- 5. CONFIGURACIÓN DE LOGGING MEJORADA ---
-    # Es bueno configurar esto para que app.logger funcione correctamente durante el desarrollo local.
-    # PythonAnywhere tiene su propio sistema de logging para producción.
-    if not app.debug: # No configurar logging si Flask está en modo debug, ya que lo maneja diferente
-        # Para desarrollo local, si no está en modo debug (ej. app.run(debug=False))
-        # o si quieres forzarlo.
-        pass # Puedes añadir handlers específicos si es necesario.
+    # Configuración básica de logging para desarrollo local
+    logging.basicConfig(level=logging.INFO) 
+    # app.logger.setLevel(logging.DEBUG) # Para más detalle si es necesario
     
-    # Si quieres que app.logger.warning y app.logger.error siempre se muestren en consola local:
-    logging.basicConfig(level=logging.INFO) # Muestra INFO, WARNING, ERROR, CRITICAL
-    # Si tu CombinacionSolver usa app.logger y quieres ver esos mensajes,
-    # tendrías que pasar la instancia de app.logger a la clase o hacerla accesible globalmente
-    # (lo cual no es ideal). Por ahora, los prints dentro de la clase son una solución simple.
-
     app.run(debug=True)
