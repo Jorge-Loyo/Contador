@@ -1,0 +1,344 @@
+/* Estilos Generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* O la fuente que prefieras */
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    /* Fondo blanco general */
+    color: #333333;
+    /* Color de texto principal (casi negro) */
+    line-height: 1.6;
+}
+
+/* Contenedor principal del contenido de cada página */
+.content-area {
+    width: 100%;
+    max-width: 1100px;
+    /* Ancho máximo para el contenido */
+    margin: 20px auto;
+    /* Centrado con margen superior/inferior */
+    padding: 20px;
+    min-height: 70vh;
+    /* Para que el footer no suba mucho en páginas cortas */
+}
+
+/* Encabezado Principal */
+.main-header {
+    background-color: #1a1a1a;
+    /* Negro o un gris muy oscuro */
+    padding: 15px 0;
+    color: #ffffff;
+    /* Texto blanco en el header */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    width: 100%;
+    max-width: 1100px;
+    /* Mismo ancho que content-area para alineación */
+    margin: 0 auto;
+    padding: 0 20px;
+    /* Espaciado lateral */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-link .logo-img {
+    height: 50px;
+    /* Ajusta el tamaño de tu logo según necesites */
+    width: auto;
+    vertical-align: middle;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+}
+
+.main-nav a {
+    color: #f0f0f0;
+    /* Un blanco un poco más suave */
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.main-nav a:hover {
+    background-color: #D4AF37;
+    /* Dorado para el hover */
+    color: #1a1a1a;
+    /* Texto oscuro sobre dorado */
+}
+
+.main-nav .auth-links {
+    display: flex;
+    align-items: center;
+}
+
+.main-nav .auth-links .welcome-user {
+    margin-right: 15px;
+    color: #cccccc;
+    /* Un gris claro para el saludo */
+}
+
+/* Estilo para botones en la navegación */
+.btn-nav-auth {
+    background-color: #D4AF37;
+    /* Dorado */
+    color: #1a1a1a !important;
+    /* Texto oscuro, !important para sobrescribir el color de 'a' si es necesario */
+    font-weight: bold;
+}
+
+.btn-nav-auth:hover {
+    background-color: #c8a430 !important;
+    /* Dorado más oscuro */
+}
+
+.btn-nav-secondary {
+    border: 1px solid #D4AF37;
+    /* Borde dorado */
+    color: #D4AF37 !important;
+    /* Texto dorado */
+    background-color: transparent;
+}
+
+.btn-nav-secondary:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    /* Un hover sutil para el secundario */
+    color: #D4AF37 !important;
+}
+
+
+/* Mensajes Flash (puedes personalizarlos más) */
+.flashes {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+
+/* Pie de Página */
+.main-footer {
+    text-align: center;
+    margin-top: auto;
+    /* Empuja el footer hacia abajo */
+    padding: 20px;
+    color: #eeeeee;
+    background-color: #2c2c2c;
+    /* Un gris oscuro para el footer */
+    width: 100%;
+    box-sizing: border-box;
+    /* Para que el padding no aumente el ancho */
+}
+
+/* Estilos para los contenedores de formularios y página principal que me pediste */
+.home-welcome-container {
+    /* Lo usaremos en home.html */
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.home-welcome-container h1 {
+    font-size: 2.5em;
+    color: #333;
+    /* Puedes usar dorado aquí: #D4AF37 */
+    margin-bottom: 20px;
+}
+
+.home-welcome-container p {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.btn-acceder {
+    /* Un botón específico para "Acceder a Herramientas" */
+    display: inline-block;
+    background-color: #D4AF37;
+    /* Dorado */
+    color: #1a1a1a;
+    /* Texto oscuro */
+    padding: 15px 35px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    border: 2px solid transparent;
+}
+
+.btn-acceder:hover {
+    background-color: #ffffff;
+    color: #D4AF37;
+    border: 2px solid #D4AF37;
+}
+
+/* Formulario (puedes expandir esto de tu CSS anterior) */
+.form-container {
+    max-width: 450px;
+    margin: 20px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #444;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"] {
+    /* Añadido para consistencia */
+    width: 100%;
+    /* Ocupa todo el ancho disponible del form-group */
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Importante para que padding no aumente el tamaño total */
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.form-group .error-message {
+    color: #d9534f;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+
+.submit-btn {
+    display: block;
+    /* Para que ocupe todo el ancho */
+    width: 100%;
+    background-color: #D4AF37;
+    /* Dorado */
+    color: #1a1a1a;
+    /* Texto oscuro */
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #c8a430;
+    /* Dorado más oscuro */
+}
+
+.text-center {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.text-center a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.text-center a:hover {
+    text-decoration: underline;
+}
+
+/* Para tu herramienta de calculador */
+.file-info {
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.reset-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #333;
+    color: #D4AF37;
+    /* Encabezados de tabla con tema */
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.summary {
+    margin-top: 20px;
+    font-size: 1.1em;
+}
+
+.no-result {
+    color: #dc3545;
+}

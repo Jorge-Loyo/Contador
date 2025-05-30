@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo_pagina if titulo_pagina else "Calculador de Montos" }} - Agilize Soluciones{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ titulo_pagina if titulo_pagina else "Comparador de Montos desde Excel 📊" }}</h1>
+
+    {# Los mensajes flash ya están en base.html, no necesitas repetirlos aquí #}
+    {# a menos que quieras una ubicación diferente SOLO para esta página. #}
+
+    {% if not excel_cargado %}
+    <h2>Paso 1: Cargar Archivo Excel</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('calculador') }}">
+        <div class="form-group">
+            <label for="excel_file">Selecciona tu archivo Excel (.xlsx, .xls):</label>
+            <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
+            {% if error_excel %}
+            <p class="error-message">{{ error_excel }}</p>
+            {% endif %}
+        </div>
+        <input type="submit" value="Cargar Excel" class="submit-btn">
+    </form>
+    {% else %}
+    <div class="file-info">
+        <p>Archivo cargado: <strong>{{ filename }}</strong> ✅</p>
+        <p><a href="{{ url_for('reset_calculador') }}" class="reset-link">Cargar otro archivo</a></p>
+    </div>
+
+    <h2>Paso 2: Ingresar Monto Objetivo</h2>
+    <form method="POST" action="{{ url_for('calculador') }}">
+        <div class="form-group">
+            <label for="monto_objetivo">Ingresa el monto objetivo:</label>
+            <input type="number" id="monto_objetivo" name="monto_objetivo" step="any" required>
+            {% if error_monto %}
+            <p class="error-message">{{ error_monto }}</p>
+            {% endif %}
+        </div>
+        <input type="submit" value="Buscar Combinación" class="submit-btn">
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from extensions import db
 
 # Creamos el Blueprint
 # El primer argumento 'herramientas' es el nombre del Blueprint.

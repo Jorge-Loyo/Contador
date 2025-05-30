@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title if title else "Iniciar Sesión" }} - Agilize Soluciones{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>{{ title if title else "Iniciar Sesión" }}</h2>
+
+    {# Los mensajes flash ya están en base.html #}
+    {# El bloque de botones "Ir a Mis Herramientas / Acceder a Herramientas" no tiene sentido aquí #}
+    {# ya que si no está logueado, la nav de base.html le da la opción de login/registro. #}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control") }}
+            {% if form.username.errors %}
+            {% for error in form.username.errors %}
+            <span class="error-message">[{{ error }}]</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control") }}
+            {% if form.password.errors %}
+            {% for error in form.password.errors %}
+            <span class="error-message">[{{ error }}]</span>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.remember_me() }} {{ form.remember_me.label }}
+        </div>
+
+        <div class="form-group">
+            {{ form.submit(class="submit-btn") }}
+        </div>
+    </form>
+    <p class="text-center">¿No tienes una cuenta? <a href="{{ url_for('auth.register') }}">Regístrate aquí</a></p>
+    {# Podrías añadir un enlace de "Olvidé mi contraseña" más adelante #}
+</div>
+{% endblock %}

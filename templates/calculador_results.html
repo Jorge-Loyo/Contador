@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo_pagina if titulo_pagina else "Resultados del Calculador" }} - Agilize Soluciones{% endblock
+%}
+
+{% block content %}
+<div class="container">
+    <h1>{{ titulo_pagina if titulo_pagina else "Resultados de la Búsqueda 🎯" }}</h1>
+    <p>Archivo procesado: <strong>{{ filename }}</strong></p>
+    <p class="summary">Monto Objetivo: <strong>${{ monto_objetivo }}</strong></p>
+
+    {% if time_exceeded %}
+    <p class="warning">
+        <strong>Advertencia:</strong> La búsqueda se detuvo después de {{ time_limit_config }} segundos para
+        asegurar una respuesta rápida.
+        La combinación mostrada es la mejor encontrada en ese tiempo, pero podría no ser la óptima global.
+    </p>
+    {% endif %}
+
+    {% if combinacion %}
+    <p class="summary">Suma Obtenida más Cercana (sin exceder): <strong>${{ suma_obtenida }}</strong></p>
+    {% set monto_obj_float = monto_objetivo|float %}
+    {% set suma_obt_float = suma_obtenida|float %}
+    <p class="summary">Diferencia: <strong>${{ "%.2f"|format(monto_obj_float - suma_obt_float) }}</strong></p>
+
+    <h2>Comprobantes Seleccionados:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID/Comprobante</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item_id, monto_str in combinacion %}
+            <tr>
+                <td>{{ item_id }}</td>
+                <td>${{ monto_str }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif not time_exceeded %}
+    <p class="no-result">No se encontró ninguna combinación de montos que sea menor o igual al monto objetivo con
+        los items y el tiempo disponible.</p>
+    {% elif time_exceeded and not combinacion %}
+    <p class="no-result">No se encontró ninguna combinación en el tiempo asignado ({{ time_limit_config }}s).</p>
+    {% endif %}
+
+    <br>
+    {# El url_for('index') debe ser ahora url_for('calculador') #}
+    <a href="{{ url_for('calculador') }}" class="btn">Volver a Intentar</a>
+</div>
+{% endblock %}

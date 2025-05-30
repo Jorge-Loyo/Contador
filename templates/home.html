@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenido - Agilize Soluciones{% endblock %}
+
+{% block content %}
+<div class="home-welcome-container">
+    {# El logo ya está en el header de base.html, así que no lo repetimos aquí #}
+    {# La navegación también está en base.html #}
+
+    <h1>Bienvenido a Agilize Soluciones</h1>
+    {# Puedes añadir más texto aquí si quieres #}
+
+    {# El botón de "Acceder a Herramientas" ya está en la navegación de base.html si el usuario no está logueado #}
+    {# O si quieres un botón grande y centrado aquí también: #}
+    {% if not current_user.is_authenticated %}
+    <p style="margin-top: 30px;">
+        <a href="{{ url_for('auth.login') }}" class="btn-acceder">Acceder a Herramientas</a>
+    </p>
+    {% else %}
+    <p style="margin-top: 30px;">
+        <a href="{{ url_for('herramientas.dashboard') }}" class="btn-acceder">Ver Mis Herramientas</a>
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

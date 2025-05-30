@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agilize Soluciones{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="header-content"> {# Un contenedor para controlar el ancho y centrado #}
+            <a href="{{ url_for('home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='images/logo_agilize.jpg') }}" alt="Logo Agilize Soluciones"
+                    class="logo-img">
+            </a>
+            <nav class="main-nav">
+                {# Estos enlaces pueden ser opcionales en el header principal o solo visibles después de login #}
+                {# Por ahora los dejamos, pero puedes decidir si los mueves o los ocultas condicionalmente #}
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('herramientas.dashboard') }}">Herramientas</a>
+                <a href="{{ url_for('calculador') }}">Calculador</a>
+                {% endif %}
+
+                <div class="auth-links">
+                    {% if current_user.is_authenticated %}
+                    <span class="welcome-user">Hola, {{ current_user.username }}!</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-nav-auth">Cerrar Sesión</a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-nav-auth">Iniciar Sesión</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-nav-secondary">Registrarse</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-area"> {# Cambié de 'container' a 'content-area' para evitar posible colisión de estilos #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flashes">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; {{ now.year if now else '2025' }} Agilize Soluciones. Todos los derechos reservados.</p>
+        {# Si configuraste el context_processor para 'now', usa now.year. Si no, pon el año directamente. #}
+    </footer>
+    {% block scripts_extra %}{% endblock %}
+</body>
+
+</html>

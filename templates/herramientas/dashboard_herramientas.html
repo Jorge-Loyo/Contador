@@ -1,57 +1,25 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo_pagina }} - Agilize Soluciones</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
+{% block title %}{{ titulo_pagina if titulo_pagina else "Panel de Herramientas" }} - Agilize Soluciones{% endblock %}
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+{% block content %}
+<div class="container">
+    {# La <nav> que tenías aquí ya está en base.html, por lo que la quito para evitar duplicidad #}
+        {# El botón "Ir a Mis Herramientas" / "Acceder a Herramientas" también estaría en la nav de base.html #}
+        {# si el usuario está o no autenticado. #}
 
-        h1 {
-            color: #007bff;
-        }
-
-        nav a {
-            margin-right: 15px;
-            text-decoration: none;
-            color: #007bff;
-        }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <nav>
-            <a href="{{ url_for('index') }}">Herramienta Contador</a>
-        </nav>
-        <hr>
-
-        <h1>{{ titulo_pagina }}</h1>
-        <p>¡Bienvenido al panel de herramientas de Agilize Soluciones!</p>
+        <h1>{{ titulo_pagina if titulo_pagina else "Panel de Herramientas" }}</h1>
+        <p>
+            ¡Bienvenido al panel de herramientas de Agilize Soluciones,
+            {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Invitado{% endif %}!
+        </p>
         <p>Aquí encontrarás diversas utilidades para facilitar tu trabajo.</p>
 
+        <h2>Herramientas Disponibles:</h2>
         <ul>
-            <li><a href="{{ url_for('index') }}">Comparador de Montos Excel</a></li>
+            <li><a href="{{ url_for('calculador') }}">Comparador de Montos Excel</a></li>
+            {# Cuando añadas más herramientas, las enlazarás aquí #}
+            {# Ejemplo: <li><a href="{{ url_for('otra_herramienta.index') }}">Otra Herramienta Genial</a></li> #}
         </ul>
-
-    </div>
-</body>
-
-</html>
+</div>
+{% endblock %}
